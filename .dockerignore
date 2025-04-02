@@ -1,0 +1,14 @@
+# Ignore version control directories and files
+.git
+.gitignore
+
+# Ignore log files
+*.log
+
+# Ignore build directories
+dist
+build
+
+# Ignore temporary files
+tmp
+*.tmp
