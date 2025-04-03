@@ -25,7 +25,7 @@ RUN groupadd -g ${GID} steam \
     && mkdir -p /home/steam/.local/share/Steam \
     && chown -R steam:steam /home/steam
 
-# Set Steam environment variables to avoid /root/ errors
+# Set environment variables
 ENV HOME=/home/steam
 ENV STEAMCMD_DIR=/usr/games
 ENV PATH="$STEAMCMD_DIR:$PATH"
@@ -39,12 +39,18 @@ RUN steamcmd +login anonymous \
     +app_update 728470 validate \
     +quit
 
-# Expose server ports
-EXPOSE 8777 15000/udp 15777/udp
+# Expose the desired port (default)
+ENV SERVER_PORT=8777
+EXPOSE ${SERVER_PORT}
 
-VOLUME ["/home/steam/astroneer"]
+# Copy the entrypoint script and ensure it has execute permissions
+COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
+RUN chmod +x /home/steam/entrypoint.sh
 
 WORKDIR /home/steam/astroneer
 
-# Run the server
+# Use the entrypoint script: it will update Engine.ini then execute the CMD
+ENTRYPOINT ["/home/steam/entrypoint.sh"]
+
+# Run the server (the command will be passed to the entrypoint)
 CMD ["wine", "AstroServer.exe"]
