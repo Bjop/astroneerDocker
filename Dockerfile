@@ -16,6 +16,7 @@ RUN set -x \
         winbind \
         xvfb \
         wine64 \
+        wget\
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root steam user
@@ -34,10 +35,15 @@ USER steam
 WORKDIR /home/steam
 
 # Install Astroneer Dedicated Server using SteamCMD (correct path)
+RUN mkdir -p /home/steam/astroneer
 RUN steamcmd +login anonymous \
     +force_install_dir /home/steam/astroneer \
     +app_update 728470 validate \
     +quit
+
+USER root
+RUN mkdir -p /usr/share/wine/mono /usr/share/wine/gecko && \
+    chown -R root:root /usr/share/wine/mono /usr/share/wine/gecko
 
 # Expose the desired port (default)
 ENV SERVER_PORT=8777
