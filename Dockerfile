@@ -46,6 +46,14 @@ USER root
 RUN mkdir -p /usr/share/wine/mono /usr/share/wine/gecko && \
     chown -R root:root /usr/share/wine/mono /usr/share/wine/gecko
 
+# Download wine-mono and wine-gecko packages
+RUN wget -O /usr/share/wine/mono/wine-mono-5.0.0-x86.msi \
+    http://dl.winehq.org/wine/wine-mono/5.0.0/wine-mono-5.0.0-x86.msi
+RUN wget -O /usr/share/wine/gecko/wine-gecko-2.47.1-x86_64.msi \
+    http://dl.winehq.org/wine/wine-gecko/2.47.1/wine-gecko-2.47.1-x86_64.msi
+RUN wget -O /usr/share/wine/gecko/wine-gecko-2.47.1-x86.msi \
+    http://dl.winehq.org/wine/wine-gecko/2.47.1/wine-gecko-2.47.1-x86.msi
+
 # Expose the desired port (default)
 ENV SERVER_PORT=8777
 EXPOSE ${SERVER_PORT}
