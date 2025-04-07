@@ -17,6 +17,7 @@ RUN set -x \
         xvfb \
         wine64 \
         wget\
+        procps\
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root steam user

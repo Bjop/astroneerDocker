@@ -15,24 +15,6 @@ log() {
 
 log "Starting configuration update."
 
-#log "setup_bashrc"
-#setup_bashrc() {
-#    cat >> /bash.bashrc <<EOF
-#
-#
-#$_bashrc_tag_start
-#export wineprefix=/wine
-#export winearch=win64
-#$_bashrc_tag_end
-#EOF
-#}
-
-#grep "${_bashrc_tag_start}" /etc/bash.bashrc > /dev/null
-#[[ $? != 0 ]] && setup_bashrc
-
-#log "steamcmd"
-#steamcmd
-
 # start Xvfb
 log "xvfb_display"
 xvfb_display=0
@@ -61,36 +43,20 @@ if [ ! -f /usr/share/wine/gecko/wine-gecko-2.47.1-x86.msi ]; then
     log "wine-gecko 32-bit download completed."
 fi
 
-# Find the full path to the wine executable
-log "find wine path"
-if WINE_PATH=$(which wine 2>/dev/null); then
-    log "wine path: $WINE_PATH"
-else
-    log "Error: Failed to find the wine executable."
-    exit 1
-fi
-
-log "wine path " WINE_PATH
-# Check if wine was found
-if [ -z "$WINE_PATH" ]; then
-    echo "Wine is not installed or not found in PATH."
-    exit 1
-fi
-
-# Get the directory of the wine binary
-WINE_DIR=$(dirname "$WINE_PATH")
 
 # Add it to PATH if not already in PATH
-log "add the wine path to PATH"
+log "adding the wine path to PATH"
+WINE_DIR="/usr/local/bin/wine64"
 if [[ ":$PATH:" != *":$WINE_DIR:"* ]]; then
-    export PATH="$WINE_DIR:$PATH"
+    export PATH="/usr/local/bin/wine64"
+
     echo "Added $WINE_DIR to PATH."
 else
     echo "$WINE_DIR is already in PATH."
 fi
 # Check if the command to execute (e.g., wine) is available.
 command_name="$1"
-if [ "$command_name" = "wine" ]; then
+if [ "$command_name" = "wine64" ]; then
     if ! command -v wine >/dev/null 2>&1; then
         log "Error: 'wine' command not found. Please ensure Wine is installed and available in your PATH."
         exit 1
