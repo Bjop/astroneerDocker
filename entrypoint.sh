@@ -7,7 +7,7 @@ set -e
 : "${OWNER_NAME:=DefaultOwner}"
 : "${OWNER_GUID:=0000-0000-0000-0000}"
 
-# Simple echoging function
+# Simple echoing function
 echo "Starting configuration update."
 
 # start Xvfb
@@ -50,20 +50,21 @@ if ! command -v wine >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "isntall procps"
-apt-get install procps
-echo "procps installed"
-echo "Location of pkill: $(which pkill)"
+#wine steamcmd.exe +login anonymous +force_install_dir Z:\\config\\gamefiles +app_update 728470 validate +quit
+
+
 #
 echo "Stopping Astroneer server..."
 pkill -f AstroServer.exe
 #
 echo "Starting Astroneer server..."
-wine ~/Steam/steamapps/common/Astroneer\ Dedicated\ Server/AstroServer.exe
-#
+echo "/config/gamefiles"
+echo "$(ls -al /config/gamefiles)"
+wine /config/gamefiles/AstroServer.exe
+
 ## Check if both configuration files exist.
-#ENGINE_INI="/home/steam/astroneer/Engine.ini"
-#ASTRO_INI="/home/steam/astroneer/AstroServerSettings.ini"
+#ENGINE_INI="/config/gamefiles/Engine.ini"
+#ASTRO_INI="/config/gamefiles/AstroServerSettings.ini"
 #
 #if [ ! -f "$ENGINE_INI" ] || [ ! -f "$ASTRO_INI" ]; then
 #    echo "Configuration file(s) missing. Please run the server once and then close it to generate the necessary configuration files."

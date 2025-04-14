@@ -1,13 +1,15 @@
-FROM steamcmd/steamcmd:ubuntu-22
+FROM ubuntu:25.04
 LABEL authors="Bjop"
 
-ARG GID=1000
-ARG UID=1000
+ARG GID=1500
+ARG UID=1500
 
 # Install dependencies
 RUN set -x \
+    && dpkg --add-architecture i386 \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
         curl \
         gosu \
         jq \
@@ -20,10 +22,12 @@ RUN set -x \
         wine \
         wget\
         procps\
+        unzip \
+    && mkdir -p /tmp/.X11-unix && chmod 1777 /tmp/.X11-unix \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root steam user
-RUN groupadd -g ${GID} steam \
+RUN getent group steam || groupadd -g ${GID} steam \
     && useradd -u ${UID} -g ${GID} -ms /bin/bash steam \
     && mkdir -p /home/steam/.steam \
     && mkdir -p /home/steam/.local/share/Steam \
@@ -34,19 +38,12 @@ ENV HOME=/home/steam
 ENV STEAMCMD_DIR=/usr/games
 ENV PATH="$STEAMCMD_DIR:$PATH"
 
-USER steam
-WORKDIR /home/steam
-
-# Install Astroneer Dedicated Server using SteamCMD (correct path)
-RUN mkdir -p /home/steam/astroneer
-RUN steamcmd +login anonymous \
-    +force_install_dir /home/steam/astroneer \
-    +app_update 728470 validate \
-    +quit
-
 USER root
 RUN mkdir -p /usr/share/wine/mono /usr/share/wine/gecko && \
     chown -R root:root /usr/share/wine/mono /usr/share/wine/gecko
+
+RUN mkdir -p /config/gamefiles && chown -R steam:steam /config
+
 
 # Download wine-mono and wine-gecko packages
 RUN wget -O /usr/share/wine/mono/wine-mono-5.0.0-x86.msi \
@@ -65,7 +62,38 @@ COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
 RUN chmod +x /home/steam/entrypoint.sh
 
 USER steam
-WORKDIR /home/steam/astroneer
+WORKDIR /home/steam
+
+# Install Astroneer Dedicated Server using SteamCMD (correct path)
+RUN mkdir -p /config/gamefiles
+#RUN steamcmd +login anonymous \
+#             +force_install_dir /config/gamefiles \
+#             +app_update 728470 validate \
+#             +quit
+ENV WINE64_DIR="/usr/local/bin/wine64"
+
+RUN if [[ ":$PATH:" != *":${WINE64_DIR}:"* ]]; then \
+        export PATH="${WINE64_DIR}:$PATH"; \
+    fi
+
+ENV WINE32_DIR="/usr/local/bin/wine32"
+
+RUN if [[ ":$PATH:" != *":${WINE32_DIR}:"* ]]; then \
+        export PATH="${WINE32_DIR}:$PATH"; \
+    fi
+
+RUN wget -O steamcmd.zip "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip" && \
+    unzip steamcmd.zip -d steamcmd_windows && \
+    rm steamcmd.zip
+
+# Run the Windows dedicated server install using Wine
+# Note: Adjust the path if needed
+RUN wineboot --init
+RUN wine Z:\home\steam\steamcmd_windows\steamcmd.exe +login anonymous +force_install_dir Z:\config\gamefiles +app_update 728470 validate +quit
+
+
+
+WORKDIR /config/gamefiles
 
 # Use the entrypoint script: it will update Engine.ini then execute the CMD
 ENTRYPOINT ["/home/steam/entrypoint.sh"]
