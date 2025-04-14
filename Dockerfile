@@ -16,6 +16,8 @@ RUN set -x \
         winbind \
         xvfb \
         wine64 \
+        wine32 \
+        wine \
         wget\
         procps\
     && rm -rf /var/lib/apt/lists/*
@@ -62,6 +64,7 @@ EXPOSE ${SERVER_PORT}
 COPY --chown=steam:steam entrypoint.sh /home/steam/entrypoint.sh
 RUN chmod +x /home/steam/entrypoint.sh
 
+USER steam
 WORKDIR /home/steam/astroneer
 
 # Use the entrypoint script: it will update Engine.ini then execute the CMD
